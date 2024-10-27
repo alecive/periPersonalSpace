@@ -15,7 +15,7 @@ source_group("Header Files" FILES ${header})
 
 add_executable(visuoTactileWrapper ${source} ${header})
 
-target_link_libraries(visuoTactileWrapper periPersonalSpace ctrlLib ${YARP_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(visuoTactileWrapper periPersonalSpace ctrlLib ${YARP_LIBRARIES} ${OpenCV_LIBRARIES})
 
 install(TARGETS visuoTactileWrapper DESTINATION bin)
 

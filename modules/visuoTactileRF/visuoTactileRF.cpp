@@ -224,10 +224,7 @@ public:
             else yInfo("Could not find robot option in the config file; using %s as default",robot.c_str());
             
         //******************* ARM VERSION ******************
-            if(robot == "icub")
-                arm_version = 2.0;
-            else //icubSim
-                arm_version = 1.0;
+            arm_version = 2.0;
             if (rf.check("arm_version"))
             {
                 arm_version = rf.find("arm_version").asDouble();
@@ -282,86 +279,16 @@ public:
                 if(skinEventsConf.check("taxelPositionFiles"))
                 {
                     Bottle *taxelPosFiles = skinEventsConf.find("taxelPositionFiles").asList();
-
-                    if (rf.check("leftHand") || rf.check("leftForeArm") || rf.check("rightHand") || rf.check("rightForeArm"))
+                    for (int i = 0; i < 7; i++)
                     {
-                        if (rf.check("leftHand"))
+                        string taxelPosFile = taxelPosFiles->get(i).asString();
+                        string filePath(skinRF.findFile(taxelPosFile));
+                        if (!filePath.empty())
                         {
-                            string taxelPosFile = taxelPosFiles->get(0).asString().c_str();
-                            string filePath(skinRF.findFile(taxelPosFile.c_str()));
-                            if (filePath!="")
-                            {
-                                yInfo("[visuoTactileRF] filePath leftHand: %s\n",filePath.c_str());
-                                filenames.push_back(filePath);
-                            }
-                        }
-                        if (rf.check("leftForeArm"))
-                        {
-                            string taxelPosFile = taxelPosFiles->get(1).asString().c_str();
-                            string filePath(skinRF.findFile(taxelPosFile.c_str()));
-                            if (filePath!="")
-                            {
-                                yInfo("[visuoTactileRF] filePath leftForeArm: %s\n",filePath.c_str());
-                                filenames.push_back(filePath);
-                            }
-                        }
-                        if (rf.check("rightHand"))
-                        {
-                            string taxelPosFile = taxelPosFiles->get(3).asString().c_str();
-                            string filePath(skinRF.findFile(taxelPosFile.c_str()));
-                            if (filePath!="")
-                            {
-                                yInfo("[visuoTactileRF] filePath rightHand: %s\n",filePath.c_str());
-                                filenames.push_back(filePath);
-                            }
-                        }
-                        if (rf.check("rightForeArm"))
-                        {
-                            string taxelPosFile = taxelPosFiles->get(4).asString().c_str();
-                            string filePath(skinRF.findFile(taxelPosFile.c_str()));
-                            if (filePath!="")
-                            {
-                                yInfo("[visuoTactileRF] filePath rightForeArm: %s\n",filePath.c_str());
-                                filenames.push_back(filePath);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        string taxelPosFile = taxelPosFiles->get(0).asString().c_str();
-                        string filePath(skinRF.findFile(taxelPosFile.c_str()));
-                        if (filePath!="")
-                        {
-                            yInfo("[visuoTactileRF] filePath leftHand: %s\n",filePath.c_str());
+                            yInfo("[visuoTactileRF] filePath: %s\n",filePath.c_str());
                             filenames.push_back(filePath);
                         }
                         taxelPosFile.clear(); filePath.clear();
-                        
-                        taxelPosFile = taxelPosFiles->get(1).asString().c_str();
-                        filePath = skinRF.findFile(taxelPosFile.c_str());
-                        if (filePath!="")
-                        {
-                            yInfo("[visuoTactileRF] filePath leftForeArm: %s\n",filePath.c_str());
-                            filenames.push_back(filePath);
-                        }
-                        taxelPosFile.clear(); filePath.clear();
-                        
-                        taxelPosFile = taxelPosFiles->get(3).asString().c_str();
-                        filePath = skinRF.findFile(taxelPosFile.c_str());
-                        if (filePath!="")
-                        {
-                            yInfo("[visuoTactileRF] filePath rightHand: %s\n",filePath.c_str());
-                            filenames.push_back(filePath);
-                        }
-                        taxelPosFile.clear(); filePath.clear();
-                        
-                        taxelPosFile = taxelPosFiles->get(4).asString().c_str();
-                        filePath = skinRF.findFile(taxelPosFile.c_str());
-                        if (filePath!="")
-                        {
-                            yInfo("[visuoTactileRF] filePath rightForeArm: %s\n",filePath.c_str());
-                            filenames.push_back(filePath);
-                        }                        
                     }
                 }
             }

@@ -1,16 +1,8 @@
 <application>
-    <name>PPS_and_reactCtrl_with_redBall</name>
+    <name>PPS_and_reactCtrl_with_redBall_new</name>
 
     <dependencies>
     </dependencies>
-
-   <module>
-        <name>reactController</name>
-        <parameters>--referenceGen minJerk --additionalControlPoints off --stiff off</parameters>
-        <node>localhost</node>
-        <stdio></stdio>
-        <tag>reactController</tag>
-    </module>
 
     <module>
         <name>skinEventsAggregator</name>
@@ -28,12 +20,6 @@
         <tag>aggregEvForiCubGui</tag>
     </module>
 
-    <module>
-        <name>pf3dTracker</name>
-<!--        <parameters>--from fluoBall.ini</parameters>-->
-        <node>localhost</node>
-        <tag>PF3DTracker</tag>
-    </module>
 
     <module>
         <name>visuoTactileWrapper</name>
@@ -49,14 +35,24 @@
         <stdio></stdio>
     </module>
 
-    
     <module>
-        <name>yarpview</name>
-<!--        <parameters>--name /PF3DT_viewer --RefreshTime 33 --x 2000 --y 750 --w 320 --h 260 --compact</parameters>-->
-        <parameters>--name /PF3DT_viewer --p 20 --x 950 --y 360 --w 320 --h 260 --compact</parameters>
+        <name>yarpdatadumper</name>
+        <parameters>--name /data/reactCtrl --txTime --rxTime</parameters>
         <node>localhost</node>
-        <tag>PF3DTracker_viewer</tag>
+        <stdio></stdio>
+        <tag>dataDumperReactCtrl</tag>
     </module>
+
+
+    <module>
+        <name>yarpdatadumper</name>
+        <parameters>--name /data/obsdata --txTime --rxTime</parameters>
+        <node>localhost</node>
+        <stdio></stdio>
+        <tag>dataDumperReactCtrlObs</tag>
+    </module>
+
+
 
     <!--module>
         <name></name>
@@ -66,10 +62,28 @@
         <tag></tag>
     </module-->
 
+    <connection>
+        <from>/reactController/data:o</from>
+        <to>/data/reactCtrl</to>
+        <protocol>udp</protocol>
+    </connection>
+
+    <connection>
+        <from>/reactController/obsdata:o</from>
+        <to>/data/obsdata</to>
+        <protocol>udp</protocol>
+    </connection>
+
    <connection>
       <from>/reactController/gui:o</from>
       <to>/iCubGui/objects</to>
       <protocol>udp</protocol>
+    </connection>
+
+    <connection>
+        <from>/reactController/prox_gui:o</from>
+        <to>/iCubGui/forces</to>
+        <protocol>udp</protocol>
     </connection>
 
     <connection>
@@ -171,6 +185,22 @@
     <connection>
     <from>/visuoTactileRF/skinGuiHandR:o</from>
         <to>/skinGui/right_hand_virtual:i</to>
+        <protocol>tcp</protocol>
+    </connection>
+    
+    <connection>
+    <from>/visuoTactileRF/skinGuiUpperarmL:o</from>
+        <to>/skinGui/left_arm_virtual:i</to>
+        <protocol>tcp</protocol>
+    </connection>
+    <connection>
+    <from>/visuoTactileRF/skinGuiUpperarmR:o</from>
+        <to>/skinGui/right_arm_virtual:i</to>
+        <protocol>tcp</protocol>
+    </connection>
+    <connection>
+    <from>/visuoTactileRF/skinGuiTorso:o</from>
+        <to>/skinGui/torso_virtual:i</to>
         <protocol>tcp</protocol>
     </connection>
 

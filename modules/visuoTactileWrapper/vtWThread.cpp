@@ -58,14 +58,17 @@ bool vtWThread::threadInit()
 
     if ((!ddG.open(OptGaze)) || (!ddG.view(igaze))){
        yError(" could not open the Gaze Controller!");
-       return false;
+        igaze = nullptr;
+
+    //   return false;
     }
-
-    igaze -> storeContext(&contextGaze);
-    igaze -> setSaccadesMode(false);
-    igaze -> setNeckTrajTime(0.75);
-    igaze -> setEyesTrajTime(0.5);
-
+    else
+    {
+        igaze->storeContext(&contextGaze);
+        igaze->setSaccadesMode(false);
+        igaze->setNeckTrajTime(0.75);
+        igaze->setEyesTrajTime(0.5);
+    }
     /**************************/
     if (!rf->check("noDoubleTouch"))
     {
@@ -199,7 +202,7 @@ void vtWThread::run()
                 {
                     yDebug("Computing data from the pf3dTracker %g [s]\n",getEstimatedUsed());
                     Vector x,o;
-                    igaze->getLeftEyePose(x,o);
+                    if (igaze != nullptr) igaze->getLeftEyePose(x,o);
 
                     Matrix T=axis2dcm(o);
                     T(0,3)=x[0];
@@ -273,7 +276,7 @@ void vtWThread::run()
                         if(doubleTouchStep<=1)
                         {
                             Vector ang(3,0.0);
-                            igaze -> lookAtAbsAngles(ang);
+                            if (igaze != nullptr) igaze -> lookAtAbsAngles(ang);
                         }
                         else if(doubleTouchStep>1 && doubleTouchStep<8)
                         {
@@ -305,7 +308,7 @@ void vtWThread::run()
                     if(doubleTouchStep<=1)
                     {
                         Vector ang(3,0.0);
-                        igaze -> lookAtAbsAngles(ang);
+                        if (igaze != nullptr) igaze -> lookAtAbsAngles(ang);
                     }
                     else if(doubleTouchStep>1 && doubleTouchStep<8)
                     {
@@ -347,12 +350,12 @@ void vtWThread::run()
         }
     }
 
-    if (pf3dTrackerPos[0]!=0.0 && pf3dTrackerPos[1]!=0.0 && pf3dTrackerPos[2]!=0.0)
-        igaze -> lookAtFixationPoint(pf3dTrackerPos);
-    else if (doubleTouchPos[0]!=0.0 && doubleTouchPos[1]!=0.0 && doubleTouchPos[2]!=0.0)
-        igaze -> lookAtFixationPoint(doubleTouchPos);
-    else if (optFlowPos[0]!=0.0 && optFlowPos[1]!=0.0 && optFlowPos[2]!=0.0)
-        igaze -> lookAtFixationPoint(optFlowPos);
+    if (pf3dTrackerPos[0]!=0.0 && pf3dTrackerPos[1]!=0.0 && pf3dTrackerPos[2]!=0.0){
+        if (igaze != nullptr) igaze -> lookAtFixationPoint(pf3dTrackerPos);}
+    else if (doubleTouchPos[0]!=0.0 && doubleTouchPos[1]!=0.0 && doubleTouchPos[2]!=0.0){
+            if (igaze != nullptr) igaze -> lookAtFixationPoint(doubleTouchPos);}
+    else if (optFlowPos[0]!=0.0 && optFlowPos[1]!=0.0 && optFlowPos[2]!=0.0){
+                if (igaze != nullptr) igaze -> lookAtFixationPoint(optFlowPos);}
 
     if (isEvent)
     {
@@ -383,43 +386,57 @@ void vtWThread::sendGuiEvents()
 {
     if (outPortGui.getOutputCount()>0)
     {
-        int counter = 1;
         Bottle obj;
 
-        for (std::vector<IncomingEvent>::const_iterator it = events.begin() ; it != events.end(); ++it){
+        for (int i = 1; i < counter; ++i) {
+            obj.clear();
+            obj.addString("delete");
+            stringstream ss;
+            ss << "o" << i;
+            obj.addString(ss.str());
+            outPortGui.write(obj);
+        }
+        int c = 1;
+
+//        Bottle obj;
+//        obj.addString("reset");
+//        outPortGui.write(obj); // ADDED to remove old keypoints
+        for (const auto & event : events){
 
             stringstream ss;
             obj.clear();
             obj.addString("object");
-            ss << "obstacle" << counter;
+            ss << "o" << c;
             obj.addString(ss.str());
 
             // size
-            obj.addDouble(1000.0* (*it).Radius);
-            obj.addDouble(1000.0* (*it).Radius);
-            obj.addDouble(1000.0* (*it).Radius);
+            obj.addFloat64(1000.0* event.Radius/1.4);
+            obj.addFloat64(1000.0* event.Radius/1.4);
+            obj.addFloat64(1000.0* event.Radius/1.4);
 
             // positions
-            obj.addDouble(1000.0 * (*it).Pos[0]);
-            obj.addDouble(1000.0 * (*it).Pos[1]);
-            obj.addDouble(1000.0 * (*it).Pos[2]);
+            obj.addFloat64(1000.0 * event.Pos[0]);
+            obj.addFloat64(1000.0 * event.Pos[1]);
+            obj.addFloat64(1000.0 * event.Pos[2]);
 
             // orientation
-            obj.addDouble(0.0);
-            obj.addDouble(0.0);
-            obj.addDouble(0.0);
+            obj.addFloat64(0.0);
+            obj.addFloat64(0.0);
+            obj.addFloat64(0.0);
 
             // color
-            obj.addInt(50 + (*it).Threat*200.0); //threatening objects will be more red
-            obj.addInt(50);
-            obj.addInt(50);
+            obj.addInt32(250); //threatening objects will be more red
+            obj.addInt32(0);
+            obj.addInt32(250);
 
             // transparency
-            obj.addDouble(0.9);
+            obj.addFloat64(0.9);
 
             outPortGui.write(obj);
-            counter++;
+            c++;
        }
+        if (c > counter)
+            counter = c;
     }
 }
 
@@ -458,9 +475,9 @@ void vtWThread::threadRelease()
         deleteGuiEvents();
 
     yDebug("Closing gaze controller..");
-        igaze -> stopControl();
-        igaze -> restoreContext(contextGaze);
-        ddG.close();
+    if (igaze != nullptr) igaze -> stopControl();
+    if (igaze != nullptr) igaze -> restoreContext(contextGaze);
+    if (igaze != nullptr) ddG.close();
 
     yDebug("Closing estimators..");
         delete linEst_optFlow;

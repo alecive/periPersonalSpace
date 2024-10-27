@@ -3,3 +3,5 @@ build
 *~
 *kdev*
 app/scripts/playground
+.idea
+cmake-build*

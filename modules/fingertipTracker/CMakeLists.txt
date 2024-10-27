@@ -15,7 +15,7 @@ source_group("Header Files" FILES ${header})
 
 add_executable(fingertipTracker ${source} ${header} )
 
-target_link_libraries(fingertipTracker periPersonalSpace ${YARP_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(fingertipTracker periPersonalSpace ${YARP_LIBRARIES} ${OpenCV_LIBRARIES})
 
 install(TARGETS fingertipTracker DESTINATION bin)
 
