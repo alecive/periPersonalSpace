@@ -5,8 +5,8 @@ using namespace  yarp::os;
 using namespace yarp::sig;
 using namespace       std;
 
-#define TAXEL_RF_ANGLE_DEG 50.0
-#define DESIRED_RADIUS_XY_AT_RF_APEX 0.07 // meters; we don't want the RF spherical sector to start at the apex,
+#define TAXEL_RF_ANGLE_DEG 70.0
+#define DESIRED_RADIUS_XY_AT_RF_APEX 0.17 // meters; we don't want the RF spherical sector to start at the apex,
 //but we want to truncate it such that it starts at the height with this radius;
 
 /****************************************************************/

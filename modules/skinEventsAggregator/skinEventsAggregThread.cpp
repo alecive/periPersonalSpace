@@ -22,8 +22,8 @@ skinEventsAggregThread::skinEventsAggregThread(int _rate, const string &_name, c
 bool skinEventsAggregThread::threadInit()
 {
     ts.update();
-    skinEventsPortIn.open(("/"+name+"/skin_events:i").c_str());
-    skinEvAggregPortOut.open(("/"+name+"/skin_events_aggreg:o").c_str());
+    skinEventsPortIn.open("/"+name+"/skin_events:i");
+    skinEvAggregPortOut.open("/"+name+"/skin_events_aggreg:o");
    
     if (robot == "icub")
         SKIN_ACTIVATION_MAX = SKIN_ACTIVATION_MAX_ICUB;
@@ -65,13 +65,13 @@ void skinEventsAggregThread::run()
                     b.clear();
                     biggestContactInSkinPart = (it->second)[indexOfBiggestContact];
                     //the output prepared should have identical format to the one prepared in  void vtRFThread::manageSkinEvents()    
-                    b.addInt(biggestContactInSkinPart.getSkinPart());
+                    b.addInt32(biggestContactInSkinPart.getSkinPart());
                     vectorIntoBottle(biggestContactInSkinPart.getGeoCenter(),b);
                     vectorIntoBottle(biggestContactInSkinPart.getNormalDir(),b);
                     //we add dummy geoCenter and normalDir in Root frame to keep same format as vtRFThread manageSkinEvents 
-                    b.addDouble(0.0); b.addDouble(0.0); b.addDouble(0.0);
-                    b.addDouble(0.0); b.addDouble(0.0); b.addDouble(0.0);
-                    b.addDouble(std::max(1.0,(biggestContactInSkinPart.getPressure()/SKIN_ACTIVATION_MAX))); // % pressure "normalized" with ad hoc constant
+                    b.addFloat64(0.0); b.addFloat64(0.0); b.addFloat64(0.0);
+                    b.addFloat64(0.0); b.addFloat64(0.0); b.addFloat64(0.0);
+                    b.addFloat64(std::max(1.0,(biggestContactInSkinPart.getPressure()/SKIN_ACTIVATION_MAX))); // % pressure "normalized" with ad hoc constant
                     b.addString(biggestContactInSkinPart.getSkinPartName()); //this one just for readability
                     out.addList().read(b);
                 }
@@ -102,8 +102,20 @@ int skinEventsAggregThread::getIndexOfBiggestContactInList(iCub::skinDynLib::ski
     {
         for(skinContactList::iterator c=sCL.begin(); c!=sCL.end(); c++)
         {
-            if( c->getActiveTaxels() >= maxActivatedTaxels)
+            printf("Link number is %d and skin number %d\n", c->getLinkNumber(), c->getSkinPart());
+            bool skip = false;
+            if( c->getActiveTaxels() >= maxActivatedTaxels && yarp::math::norm(c->getNormalDir()) > 0.8)
             {
+                if (c->getSkinPart() == iCub::skinDynLib::SKIN_LEFT_HAND || c->getSkinPart() == iCub::skinDynLib::SKIN_RIGHT_HAND) {
+                    for (unsigned int taxel: c->getTaxelList()) {
+                        if (taxel < 70) {
+                            std::cout << "Skip because " << taxel << " " << index << "\n";
+                            skip = true;
+                            break;
+                        }
+                    }
+                }
+                if (skip) continue;
                 maxActivatedTaxels = c->getActiveTaxels();
                 index = std::distance( sCL.begin(), c);
             }

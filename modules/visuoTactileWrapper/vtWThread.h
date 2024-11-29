@@ -48,8 +48,8 @@
 #include <stdarg.h>
 #include <vector>
 
-#include <cv.h>
-#include <highgui.h>
+//#include <cv.h>
+//#include <highgui.h>
 #include <iCub/ctrl/math.h>
 #include <iCub/periPersonalSpace/utils.h>
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
@@ -80,7 +80,7 @@ protected:
 
     /***************************************************************************/
     // INTERNAL VARIABLES:
-    
+    int counter{0};
     // Output Port & events
         yarp::os::Port depth2kinPort;
         yarp::os::Port SFMPort;

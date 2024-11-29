@@ -137,24 +137,35 @@ private:
         if(collPointsMultiBottle != NULL)
         {
             //printf("fillSkinContactFromAggregPort(): There were %d bottles on the port.\n",collPointsMultiBottle->size());
-            for(int i=0; i< collPointsMultiBottle->size();i++)
-            {
+            for(int i=0; i< collPointsMultiBottle->size();i++) {
                 sp = SKIN_PART_UNKNOWN;
-                geocenter.zero(); normal.zero();  normalized_activation = 0.0;
-                Bottle* collPointBottle = collPointsMultiBottle->get(i).asList();
+                geocenter.zero();
+                normal.zero();
+                normalized_activation = 0.0;
+                moment.zero();
+                force.zero();
+                Bottle *collPointBottle = collPointsMultiBottle->get(i).asList();
                 //printf("Bottle %d contains %s \n", i,collPointBottle->toString().c_str());
-                sp =  (SkinPart)(collPointBottle->get(0).asInt());
-                geocenter(0) = collPointBottle->get(1).asDouble();
-                geocenter(1) = collPointBottle->get(2).asDouble();
-                geocenter(2) = collPointBottle->get(3).asDouble();
-                normal(0) = collPointBottle->get(4).asDouble();
-                normal(1) = collPointBottle->get(5).asDouble();
-                normal(2) =  collPointBottle->get(6).asDouble();
-                normalized_activation = collPointBottle->get(13).asDouble();
-
-                force(0)=-1.0*amplification*normalized_activation*normal(0); force(1)=-1.0*amplification*normalized_activation*normal(1);
-                force(2) = -1.0*amplification*normalized_activation*normal(2);
-                
+                sp = (SkinPart) (collPointBottle->get(0).asInt32());
+                geocenter(0) = collPointBottle->get(1).asFloat64();
+                geocenter(1) = collPointBottle->get(2).asFloat64();
+                geocenter(2) = collPointBottle->get(3).asFloat64();
+                normal(0) = collPointBottle->get(4).asFloat64();
+                normal(1) = collPointBottle->get(5).asFloat64();
+                normal(2) = collPointBottle->get(6).asFloat64();
+                normalized_activation = collPointBottle->get(13).asFloat64();
+                if (amplification == gain)
+                {
+                    moment(0) = -1.0 * amplification * normalized_activation * normal(0);
+                    moment(1) = -1.0 * amplification * normalized_activation * normal(1);
+                    moment(2) = -1.0 * amplification * normalized_activation * normal(2);
+                }
+                else
+                {
+                    force(0) = -1.0 * amplification * normalized_activation * normal(0);
+                    force(1) = -1.0 * amplification * normalized_activation * normal(1);
+                    force(2) = -1.0 * amplification * normalized_activation * normal(2);
+                }
                 //see  iCubGui/src/objectsthread.h    ObjectsManager::manage(iCub::skinDynLib::skinContactList &forces)
                 //printf("fillDynContactFromAggregPort: setting dynContact: Body part: %s Linknum: %d CoP: %s F: %s M: %s\n",
                 //BodyPart_s[SkinPart_2_BodyPart[sp].body].c_str(),getLinkNum(sp),geoCenter.toString(3,3).c_str(),
@@ -198,10 +209,10 @@ public:
         from=rf.check("from",Value("ppsAggregEventsForiCubGui.ini")).asString();
         name=rf.check("name",Value("ppsAggregEventsForiCubGui")).asString();
         verbosity = rf.check("verbosity",Value(0)).asInt();
-        autoconnect=rf.check("autoconnect",Value("off")).asString()=="on"?true:false; // on | off
-        tactile=rf.check("tactile",Value("on")).asString()=="on"?true:false; // on | off
-        pps=rf.check("pps",Value("on")).asString()=="on"?true:false; // on | off
-        gain=rf.check("gain",Value(50.0)).asDouble();
+        autoconnect= rf.check("autoconnect", Value("off")).asString() == "on"; // on | off
+        tactile= rf.check("tactile", Value("on")).asString() == "on"; // on | off
+        pps= rf.check("pps", Value("on")).asString() == "on"; // on | off
+        gain=rf.check("gain",Value(50.0)).asFloat64();
     
         yInfo("[ppsAggregEventsForiCubGui] Initial Parameters:");
         yInfo("Context: %s \t From: %s \t Name: %s \t Verbosity: %d",
@@ -222,9 +233,9 @@ public:
         
         if (autoconnect)
         {
-            Network::connect("/skinEventsAggregator/skin_events_aggreg:o",("/"+name+"/skin_events_aggreg:i").c_str());
-            Network::connect("/visuoTactileRF/pps_events_aggreg:o",("/"+name+"/pps_events_aggreg:i").c_str());
-            Network::connect(("/"+name+"/contacts:o").c_str(),"/iCubGui/forces");
+            Network::connect("/skinEventsAggregator/skin_events_aggreg:o","/"+name+"/skin_events_aggreg:i");
+            Network::connect("/visuoTactileRF/pps_events_aggreg:o","/"+name+"/pps_events_aggreg:i");
+            Network::connect("/"+name+"/contacts:o","/iCubGui/forces");
         }
         
         
@@ -263,7 +274,7 @@ public:
 
     double getPeriod()
     {
-        return 0.03;
+        return 0.02;
     }
 
     bool updateModule()
@@ -272,7 +283,7 @@ public:
         mySkinContactList.clear();
   
         if(tactile)
-            fillSkinContactFromAggregPort(aggregSkinEventsInPort,gain,mySkinContactList);
+            fillSkinContactFromAggregPort(aggregSkinEventsInPort,1.4*gain,mySkinContactList);
         if(pps)
             fillSkinContactFromAggregPort(aggregPPSeventsInPort,gain,mySkinContactList);
         

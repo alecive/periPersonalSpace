@@ -32,6 +32,8 @@
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Stamp.h>
 
+#include <yarp/math/Math.h>
+
 #include <iCub/skinDynLib/skinContact.h>
 #include <iCub/skinDynLib/skinPart.h>
 #include <iCub/skinDynLib/skinContactList.h>

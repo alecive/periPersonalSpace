@@ -48,8 +48,8 @@
 #include <set>
 #include <list>
 
-#include <cv.h>
-#include <highgui.h>
+//#include <cv2.h>
+//#include <highgui.h>
 #include <iCub/ctrl/math.h>
 #include <iCub/periPersonalSpace/skinPartPWE.h>
 #include <iCub/skinDynLib/skinContact.h>
@@ -101,8 +101,11 @@ protected:
 
     BufferedPort<Bottle> skinGuiPortForearmL;     // output to the skinGui
     BufferedPort<Bottle> skinGuiPortForearmR;
+    BufferedPort<Bottle> skinGuiPortUpperarmL;     // output to the skinGui
+    BufferedPort<Bottle> skinGuiPortUpperarmR;
     BufferedPort<Bottle>    skinGuiPortHandL;
     BufferedPort<Bottle>    skinGuiPortHandR;
+    BufferedPort<Bottle>    skinGuiPortTorso;
 
     BufferedPort<iCub::skinDynLib::skinContactList> *skinPortIn;  // input from the skinManager
     BufferedPort<yarp::os::Bottle> ppsEventsPortOut;              // output for the events
@@ -161,6 +164,7 @@ protected:
     int                jntsL; //all joints including fingers ~ 16
     int                jntsAL; //arm joints only ~ 7
     // "Classical" interfaces - TORSO
+    iCubTorso         *torso;
     IEncoders         *iencsT;
     yarp::sig::Vector *encsT;
     int                jntsT;
@@ -218,7 +222,7 @@ protected:
     * @param _eye is the eye to draw the taxels into. It can be
     *             either rightEye, or leftEye.
     **/
-    void drawTaxels(string _eye);
+    void drawTaxels(const string& _eye);
 
     /**
     * Physically draws a taxel into an image, given its position and its activation.
@@ -251,7 +255,7 @@ protected:
                   (basically, the index of the skinPart that has been touched)
     * @param v    is a vector of IDs of the representative taxels activated
     **/
-    bool getRepresentativeTaxels(const std::vector<unsigned int> IDv, const int IDx, std::vector<unsigned int> &v);
+    bool getRepresentativeTaxels(const std::vector<unsigned int>& IDv, const int IDx, std::vector<unsigned int> &v);
 
     
     /**
@@ -339,7 +343,7 @@ public:
     * @param M   is the transform matrix to push
     * @param eye is the eye to push the matrix into
     **/
-    bool pushExtrinsics(const Matrix &M, string eye);
+    bool pushExtrinsics(const Matrix &M, const string& eye);
 
     /**
     * Trains the taxels according to the incoming event.
@@ -347,7 +351,7 @@ public:
     * @param IDx  is the index of the iCubSkin affected by the contact
     *             (basically, the index of the skinPart that has been touched)
     **/
-    bool trainTaxels(const std::vector<unsigned int> IDv, const int IDx);
+    bool trainTaxels(const std::vector<unsigned int>& IDv, const int IDx);
 
     /**
     * Saving function. It saves the skinParts as well as their receptive fields.

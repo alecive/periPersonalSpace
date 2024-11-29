@@ -15,7 +15,7 @@ source_group("Header Files" FILES ${header})
 
 add_executable(ultimateTracker ${source} ${header})
 
-target_link_libraries(ultimateTracker periPersonalSpace ${YARP_LIBRARIES} ${OpenCV_LIBS})
+target_link_libraries(ultimateTracker periPersonalSpace ${YARP_LIBRARIES} ${OpenCV_LIBRARIES})
 
 install(TARGETS ultimateTracker DESTINATION bin)
 
